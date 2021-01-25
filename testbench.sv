@@ -3,19 +3,19 @@
 
 //SPI Top TB
 
+`timescale 1ns/100ps
+
  import uvm_pkg::*;
 `include "uvm_macros.svh"
-`include "interface.sv"
 `include "packet.sv"
 `include "sequence1.sv"
 `include "sequencer.sv"
 `include "driver.sv"
-`include "interface.sv"
 `include "monitor.sv"
 `include "agent.sv"
 `include "scoreboard.sv"
 `include "env.sv"
-`include "spi_test.sv"
+`include "test.sv"
 
 module top_tb;
   
@@ -41,9 +41,7 @@ module top_tb;
   end
 
   initial begin 
-    //run_test("spi_test");
-	#100;
-    $finish;
+    run_test("test");
   end
   
 endmodule
