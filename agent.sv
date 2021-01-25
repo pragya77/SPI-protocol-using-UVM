@@ -1,14 +1,15 @@
 class agent extends uvm_agent;
 
+    
+  driver i_driver;
+  monitor i_monitor;
+  sequencer i_sequencer;
+  
   `uvm_component_utils(agent)
   
   function new(string name ="agent", uvm_component parent);
     super.new(name, parent);
   endfunction
-  
-  driver i_driver;
-  monitor i_monitor;
-  sequencer i_sequencer;
   
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);   
@@ -24,5 +25,11 @@ class agent extends uvm_agent;
       i_driver.seq_item_port.connect(i_sequencer.seq_item_export);
     end
   endfunction
+  
+   task run_phase(uvm_phase phase);
+    
+     `uvm_info(get_type_name(), "IN RUN PHASE OF AGENT", UVM_LOW)
+    
+  endtask
   
 endclass
