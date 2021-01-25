@@ -8,6 +8,10 @@ class sequencer extends uvm_sequencer #(packet);
     super.new(name, parent);
   endfunction
   
-  
+  task run_phase(uvm_phase phase);
+    
+    `uvm_info(get_type_name(), "IN RUN PHASE OF SEQUENCER", UVM_LOW)
+    
+  endtask
   
 endclass
