@@ -23,13 +23,17 @@
 
 	task run_phase(uvm_phase phase);
          
+      wait(intf.reset == 1'b0);
+   	 wait(intf.reset == 1'b1);
+      `uvm_info(get_type_name(), "IN RUN PHASE OF MONITOR", UVM_LOW)
 		forever begin
 
           item = packet::type_id::create("item",this);
-
+			
          // get data from dut through interface
           
 	      item_collected_port.write(item);
+          @(posedge intf.mclk);
 		end
 	endtask
 
