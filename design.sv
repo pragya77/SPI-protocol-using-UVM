@@ -1,7 +1,23 @@
+`timescale 1ns/100ps 
+
+//SPI interface
+
+interface spi_interface(input logic mclk,reset);
+  logic start;
+  logic slave_rd_wr;
+  logic master_rd_wr;
+  logic [6:0]slave_address;
+  logic [6:0]master_address;
+  logic [7:0]master_in_data;
+  logic [7:0]master_out_data;
+  logic [7:0]slave_in_data;
+  logic [7:0]slave_out_data;  
+endinterface
+
 
 //-----------SPI TOP DUT-------------//
 
-module top_dut(input logic mclk, input logic reset, input logic start, output logic slave_rd_wr, input logic master_rd_wr, output logic [6:0] slave_address, input logic [6:0] master_address, input logic [7:0] master_in_data,output logic [7:0] master_out_data, input logic [7:0] slave_in_data,output logic [7:0] slave_out_data);
+module top_dut(input logic mclk, input logic reset, input logic start, output logic slave_rd_wr, input logic master_rd_wr, output logic [6:0] slave_address, input logic [6:0] master_address, output logic [7:0] master_in_data,input logic [7:0] master_out_data, output logic [7:0] slave_in_data,input logic [7:0] slave_out_data);
 
     logic miso,mosi,cs,sclk;
                
@@ -12,12 +28,13 @@ module top_dut(input logic mclk, input logic reset, input logic start, output lo
 endmodule
 
 //-------------SPI MASTER--------------//
-module spi_master(input logic mclk, input logic reset, input logic start, input logic master_rd_wr, input logic [6:0] master_address, input logic [7:0] master_in_data, output logic [7:0] master_out_data, input logic miso, output logic mosi, output logic cs, output logic sclk);
+module spi_master(input logic mclk, input logic reset, input logic start, input logic master_rd_wr, input logic [6:0] master_address, output logic [7:0] master_in_data, input logic [7:0] master_out_data, input logic miso, output logic mosi, output logic cs, output logic sclk);
 
   int count = 0; 
   logic [7:0] header;
   logic [7:0] header1;
   logic [7:0] in_data;
+  logic [7:0] out_data;
   
   assign sclk=mclk;
   assign header1 = {master_rd_wr, master_address[6:0]};
@@ -41,12 +58,15 @@ module spi_master(input logic mclk, input logic reset, input logic start, input 
         
         if(count >=8 && count < 16) begin
           if(master_rd_wr) begin
+            if(count == 8) out_data <= master_out_data;
+            
             in_data[0]<= miso;
           	in_data <= in_data << 1;
+            
           end
           else begin
-            mosi <= master_out_data[7];
-            master_out_data <= master_out_data << 1;
+            mosi <= out_data[7];
+            out_data <= out_data << 1;
           end 
         end 
         
@@ -60,11 +80,12 @@ endmodule
           
 //---------SPI SLAVE------------//
 
-module spi_slave(input logic sclk, input logic reset, input logic cs, input logic mosi, output logic miso, output logic slave_rd_wr, output logic [6:0] slave_address, input logic [7:0]slave_in_data, output logic[7:0] slave_out_data);
+module spi_slave(input logic sclk, input logic reset, input logic cs, input logic mosi, output logic miso, output logic slave_rd_wr, output logic [6:0] slave_address, output logic [7:0]slave_in_data, input logic[7:0] slave_out_data);
 
   int count;
   logic [7:0]in_data;
   logic [7:0] in_header;
+  logic [7:0] out_data;
   assign slave_in_data = in_data;
   assign slave_rd_wr = in_header[7];
   assign slave_address[6:0] = in_header[6:0];
@@ -82,12 +103,15 @@ module spi_slave(input logic sclk, input logic reset, input logic cs, input logi
         end
       if(count >=8 && count < 16)begin
         if(slave_rd_wr) begin
-          miso <= slave_out_data[7];
-          slave_out_data <= slave_out_data << 1;
+          if(count == 8) out_data <= slave_out_data;
+          
+          miso <= out_data[7];
+          out_data <= out_data << 1;
+          
         end
         else begin
           in_data[0] <= mosi;
-          in_data <= slave_in_data << 1;
+          in_data <= in_data << 1;
         end
       end
       end
