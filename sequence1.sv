@@ -1,7 +1,5 @@
 class sequence1 extends uvm_sequence #(packet);
   
-  packet item;
-  
   `uvm_object_utils(sequence1)
   
   function new( string name = " sequence1 ");
@@ -9,11 +7,14 @@ class sequence1 extends uvm_sequence #(packet);
   endfunction
   
   virtual task body();
+  
+    packet item;
+    repeat(10)begin
+      `uvm_info(get_type_name(), "Executing sequence", UVM_LOW)
+      item=new();
+      `uvm_do(item)
+    end
     	
-   		repeat(10) begin
-        	`uvm_info(get_type_name(), "Executing sequence", UVM_LOW)
-    		`uvm_do(item)
-    	end
   endtask  
   
 endclass  
