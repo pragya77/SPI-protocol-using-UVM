@@ -9,9 +9,12 @@ class packet extends uvm_sequence_item;
   bit [7:0]slave_in_data;
   rand bit [7:0]slave_out_data; 
   
-  `uvm_object_utils(packet)
+  `uvm_object_utils_begin(packet)
+  `uvm_field_int(slave_rd_wr, UVM_ALL_ON)
+  `uvm_field_int(master_rd_wr, UVM_ALL_ON)
+  `uvm_object_utils_end
   
-  function new(string name = " packet ");
+  function new(string name ="packet");
     super.new(name);
   endfunction
   
