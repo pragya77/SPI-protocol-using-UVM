@@ -30,8 +30,8 @@ endmodule
 //-------------SPI MASTER--------------//
 module spi_master(input logic mclk, input logic reset, input logic start, input logic master_rd_wr, input logic [6:0] master_address, output logic [7:0] master_in_data, input logic [7:0] master_out_data, input logic miso, output logic mosi, output logic cs, output logic sclk);
 
-  int count = 0; 
-  logic [7:0] header;
+  int count; 
+  logic [7:0] header = 0;
   logic [7:0] header1;
   logic [7:0] in_data;
   logic [7:0] out_data;
@@ -41,39 +41,48 @@ module spi_master(input logic mclk, input logic reset, input logic start, input 
   assign master_in_data = in_data;
   
   always @(posedge mclk) begin
-    if(!reset)
-      begin
-        mosi<=0;
-        cs<=1;
-        header <= header1;
-      end
-    else begin
-      if(start) begin
-        if(count < 16) cs<=0;
-        else cs<=1;
-        if(count < 8) begin
-          mosi <= header[7];
-          header <= header << 1;
-        end  
-        
-        if(count >=8 && count < 16) begin
-          if(master_rd_wr) begin
-            if(count == 8) out_data <= master_out_data;
-            
-            in_data[0]<= miso;
-          	in_data <= in_data << 1;
-            
-          end
-          else begin
-            mosi <= out_data[7];
-            out_data <= out_data << 1;
-          end 
+    	if(!reset)
+     	 	begin
+        		mosi <=0;
+        		cs <=1; 
+			count <= 0;    
+      		end
+    	else begin
+		if(start)begin
+      			if(count == 0)begin
+				header <= header1;
+				if(master_rd_wr == 0) out_data <= master_out_data;
+			end
+
+			if(count == 1) cs <= 0;
+		
+			if(count >= 1 && count <= 8) begin
+				mosi <= header[7]; 
+				header <= header << 1;
+			end
+
+			if( count > 8 && count <=16) begin
+				if(master_rd_wr == 1) begin
+					in_data[0] <= miso;
+					in_data <= in_data << 1;
+				end
+				else begin
+					mosi <= out_data[7];
+					out_data <= out_data << 1;
+				end		
+
+			end
+
+			count <= count + 1;
+            	end
+
+		else begin
+          count <= 0;
+          cs <= 1;
         end 
-        
-      end
-    end
-      count <= count + 1;
-    end
+  	end
+
+   end
   
 endmodule
 
@@ -82,7 +91,7 @@ endmodule
 
 module spi_slave(input logic sclk, input logic reset, input logic cs, input logic mosi, output logic miso, output logic slave_rd_wr, output logic [6:0] slave_address, output logic [7:0]slave_in_data, input logic[7:0] slave_out_data);
 
-  int count;
+  int count_s;
   logic [7:0]in_data;
   logic [7:0] in_header;
   logic [7:0] out_data;
@@ -91,31 +100,46 @@ module spi_slave(input logic sclk, input logic reset, input logic cs, input logi
   assign slave_address[6:0] = in_header[6:0];
   
   always@(negedge sclk) begin
-    if(!reset) begin
-      miso<=0;
-    end
-    else begin
-      if(!cs) begin
-        if(count < 8) begin
-        in_header <= mosi;
-        in_header <= in_header << 1;   
-        end
-        end
-      if(count >=8 && count < 16)begin
-        if(slave_rd_wr) begin
-          if(count == 8) out_data <= slave_out_data;
-          
-          miso <= out_data[7];
-          out_data <= out_data << 1;
-          
-        end
-        else begin
-          in_data[0] <= mosi;
-          in_data <= in_data << 1;
-        end
-      end
-      end
-  count <= count + 1;
+    	if(!reset) begin
+      		miso <= 0;
+		count_s <= 0;
+    	end
+
+    	else begin
+
+          if(count_s == 0) out_data <= slave_out_data;
+
+      		if(!cs) begin
+						
+              if(count_s >0 && count_s <=8) begin
+				in_header[0] <= mosi;
+				in_header <= in_header << 1;
+			end
+
+              if(count_s > 8 && count_s <=16) begin
+
+				if(slave_rd_wr == 1) begin
+					miso <= out_data[7];
+					out_data <= out_data << 1;
+				end
+
+				else begin
+					in_data[0]<= mosi;
+					in_data <= in_data << 1;
+				end
+				
+			end	
+
+			end	
+           else begin
+             	count_s <= 0;
+           end
+            
+
+			count_s <= count_s + 1;
+		
+	end
+        
   end
   
 endmodule
