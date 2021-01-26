@@ -65,25 +65,24 @@
 					header <= header << 1;
 				end
 
-          			if( count > 8 && count <=16) begin
+              			if( count > 8 ) begin
 					if(master_rd_wr == 1) begin
-                  				in_data <= {in_data[6:0], miso};
+                      				if(count <=17)
+                  					in_data <= {in_data[6:0], miso};
+						end
+						else begin
+                      					if(count <=16)begin
+								mosi <= out_data[7];
+								out_data <= out_data << 1;
+                      					end
+						end		
+                     
 					end
-					else begin
-						mosi <= out_data[7];
-						out_data <= out_data << 1;
-					end		
-
-				end
+              			if(count >= 18) cs <= 1;
 
 				count <= count + 1;
-        	    	end
-
-			else begin        		
-        	  		cs <= 1;
-        		end 
+        		end
   		end
-
    	end
   
  endmodule
