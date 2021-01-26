@@ -1,39 +1,34 @@
-class driver extends uvm_driver #(packet);
-  
-    packet item;
-  virtual spi_interface intf;
+ class agent extends uvm_agent;
 
-  `uvm_component_utils(driver)
+  	driver i_driver;
+  	monitor i_monitor;
+  	sequencer i_sequencer;
   
-  function new(string name ="driver", uvm_component parent);
-    super.new(name, parent);
-  endfunction
+  	`uvm_component_utils(agent)
   
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
+  	function new(string name ="agent", uvm_component parent);
+    		super.new(name, parent);
+  	endfunction
+  
+  	function void build_phase(uvm_phase phase);
+    		super.build_phase(phase);   
+    		i_monitor = monitor::type_id::create("i_monitor",this);
+    		if(get_is_active() == UVM_ACTIVE)begin
+      			i_driver = driver::type_id::create("i_driver",this);
+      			i_sequencer = sequencer::type_id::create("i_sequencer",this);
+    		end 
+  	endfunction
+  
+  	function void connect_phase(uvm_phase phase);
+    		if(get_is_active() == UVM_ACTIVE)begin
+      			i_driver.seq_item_port.connect(i_sequencer.seq_item_export);
+    		end
+ 	endfunction
+  
+   	task run_phase(uvm_phase phase);
     
-    if(! uvm_config_db #(virtual spi_interface)::get(this,"", "vif" , intf))
-      	`uvm_error("NOVIF", {"virtual interface must be set for:", get_full_name(), ".vif"})
-  endfunction
+     		`uvm_info(get_type_name(), "IN RUN PHASE OF AGENT", UVM_LOW)
+    
+  	endtask
   
-  task run_phase(uvm_phase phase);
-    wait(intf.reset == 1'b0);
-    wait(intf.reset == 1'b1);
-    `uvm_info(get_type_name(), "IN RUN PHASE OF DRIVER", UVM_LOW)
-    forever begin
-		  seq_item_port.get_next_item(item);
-      
-     	  // drive data to dut through interface
-      		intf.start <=1;
-      		intf.master_rd_wr <= item.master_rd_wr;
-      		intf.master_address <= item.master_address;
-      		if(item.master_rd_wr == 0) intf.master_out_data <= item.master_out_data;
-      		if(item.master_rd_wr) intf.slave_out_data <= item.slave_out_data;
-      		repeat(16) @(posedge intf.mclk);
-      		intf.start <=0;
-      
-		  seq_item_port.item_done();
-        end
-  endtask
-  
-endclass
+ endclass
