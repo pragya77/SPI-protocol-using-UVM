@@ -97,10 +97,6 @@
   	logic [7:0] in_header = 0;
   	logic [7:0] out_data;
   
-  	always @(posedge sclk) begin
-    		//
-  	end  
-  
   	always@(negedge sclk) begin
     		if(!reset) begin
       			miso <= 0;
