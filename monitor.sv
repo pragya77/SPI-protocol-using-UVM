@@ -30,7 +30,7 @@
 
 			item = packet::type_id::create("item",this);
           		@(posedge intf.start);
-          		repeat(20) @(posedge intf.mclk);
+          repeat(19) @(posedge intf.mclk);
           		item.slave_rd_wr = intf.slave_rd_wr;
         		item.master_rd_wr = intf.master_rd_wr;
         		item.slave_address = intf.slave_address;
