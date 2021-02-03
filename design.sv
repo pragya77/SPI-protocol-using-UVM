@@ -1,3 +1,4 @@
+// Code your design here
  `timescale 1ns/100ps 
 
  //SPI interface
@@ -12,6 +13,9 @@
   	logic [7:0]master_out_data;
   	logic [7:0]slave_in_data;
   	logic [7:0]slave_out_data;  
+   
+
+   
  endinterface
 
 
@@ -78,12 +82,20 @@
 						end		
                      
 					end
-              			if(count >= 18) cs <= 1;
+              if(count >= 17) cs <= 1;
 
 				count <= count + 1;
         		end
   		end
    	end
+   
+      property p1;
+     @(posedge mclk)
+        cs ##1 !cs |-> !cs[*16] ##1 cs;
+   endproperty
+   
+   a1 : assert property (p1) else
+     `uvm_error("a1", "Error in property 1 assertion")
   
  endmodule
 
