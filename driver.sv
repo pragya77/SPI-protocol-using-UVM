@@ -30,7 +30,7 @@
       			if(item.master_rd_wr == 0) intf.master_out_data <= item.master_out_data;
       			if(item.master_rd_wr) intf.slave_out_data <= item.slave_out_data;
       			intf.start <=1;
-      			repeat(19) @(posedge intf.mclk);
+              repeat(18) @(posedge intf.mclk);
       			intf.start <=0;
       
 			seq_item_port.item_done();     	  		
