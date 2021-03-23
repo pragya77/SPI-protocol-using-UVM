@@ -11,7 +11,6 @@
     		packet item;
     		repeat(10)begin
       			`uvm_info(get_type_name(), "Executing sequence", UVM_LOW)
-      			item=new();
       			`uvm_do(item)
       			#20;
     		end
